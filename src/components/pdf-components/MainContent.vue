@@ -74,6 +74,8 @@
 
     <TableComponent class="area-common 5"></TableComponent>
 
+    <TableAnalysisComponent class="area-common"></TableAnalysisComponent>
+
     <div class="area-common 6">
       <EchartPage :chartCode="chartCode"></EchartPage>
     </div>
@@ -177,6 +179,7 @@
   import LineArea from './LineArea'
   import AreaStyle from './AreaStyle'
   import TotalIndex from '../totalSituation/TotalIndex'
+  import TableAnalysisComponent from '../tradeAnalysis/TableComponent'
   export default {
     props: {
       chartCode: {
@@ -214,7 +217,8 @@
       LineChart,
       RoundComponent,
       LineArea,
-      AreaStyle
+      AreaStyle,
+      TableAnalysisComponent
     },
     mounted () {
 

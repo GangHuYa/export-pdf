@@ -187,6 +187,11 @@
     mounted() {
     },
     methods: {
+      exportPdf() {
+        this.$nextTick(() => {
+          this.generatePdf()
+        })
+      },
       async generatePdf() {
         const element = document.querySelector('.second-page-pdf');
         // const element = document.querySelector('.second-page');

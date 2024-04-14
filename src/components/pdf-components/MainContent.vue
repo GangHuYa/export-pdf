@@ -1,6 +1,7 @@
 <!-- -->
 <template>
   <div class="second-page-wrap" id="secondPage">
+    <TotalIndex :chartCode="chartCode" class="divide-inside"></TotalIndex>
     <div class="area-first area-common 1">
       1
       <el-table
@@ -69,19 +70,25 @@
       </el-table>
     </div>
 
-    <div class="area-common 4">
-      <EchartPage></EchartPage>
+    <RadarComponent class="area-common 4" :chartCode="chartCode"></RadarComponent>
+
+    <TableComponent class="area-common 5"></TableComponent>
+
+    <div class="area-common 6">
+      <EchartPage :chartCode="chartCode"></EchartPage>
     </div>
 
-    <div class="area-common divide-inside 5">
+    <LineChart class="area-common 7" :chartCode="chartCode"></LineChart>
+
+    <div class="area-common 8">
       <div class="container black">
         <div class="item" v-for="(item, index) in 40" :key="index">{{ item }}</div>
       </div>
     </div>
 
-    <CircleComponent class="area-common"></CircleComponent>
+    <CircleComponent class="area-common 9" :chartCode="chartCode"></CircleComponent>
 
-    <div class="area-common 6">
+    <div class="area-common 10">
       4
       <el-table
         :data="tableData"
@@ -104,7 +111,9 @@
       </el-table>
     </div>
 
-    <div class="area-common 7">
+    <RoundComponent class="area-common 11" :chartCode="chartCode"></RoundComponent>
+
+    <div class="area-common 12">
       5
       <el-table
         :data="tableData"
@@ -127,7 +136,9 @@
       </el-table>
     </div>
 
-    <div class="area-common 8">
+    <LineArea class="area-common 13" :chartCode="chartCode"></LineArea>
+
+    <div class="area-common 14">
       6
       <el-table
         :data="tableData"
@@ -149,6 +160,8 @@
         </el-table-column>
       </el-table>
     </div>
+
+    <AreaStyle class="area-common 15" :chartCode="chartCode"></AreaStyle>
   </div>
 </template>
 
@@ -157,7 +170,20 @@
   import JsPdf from 'jspdf'
   import EchartPage from './EchartPage'
   import CircleComponent from '@/components/pdf-components/CircleComponent'
+  import RadarComponent from './RadarComponent'
+  import TableComponent from './TableComponent'
+  import LineChart from './LineChart'
+  import RoundComponent from './RoundComponent'
+  import LineArea from './LineArea'
+  import AreaStyle from './AreaStyle'
+  import TotalIndex from '../totalSituation/TotalIndex'
   export default {
+    props: {
+      chartCode: {
+        type: String,
+        defualt: ''
+      }
+    },
     data () {
       return {
         tableData: [{
@@ -180,8 +206,15 @@
       }
     },
     components: {
+      TotalIndex,
       EchartPage,
-      CircleComponent
+      CircleComponent,
+      RadarComponent,
+      TableComponent,
+      LineChart,
+      RoundComponent,
+      LineArea,
+      AreaStyle
     },
     mounted () {
 
@@ -326,6 +359,9 @@
 </script>
 <style lang='less' scoped>
   .second-page-wrap {
+    .area-first {
+      background: red;
+    }
     .black {
       background: #000;
     }
@@ -342,8 +378,8 @@
     .area-common {
       // margin: 30px auto;
       width: 80%;
-      margin: 0 auto;
-      padding: 30px 0;
+      margin: 0 auto 20px auto;
+      // padding: 30px 0;
     }
   }
 </style>

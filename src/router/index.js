@@ -49,6 +49,14 @@ const routes = [
   {
     path: '/export-image',
     component: () => import('../views/ExportImage.vue')
+  },
+  {
+    path: '/offset-top',
+    name: 'OffsetTop',
+    meta: {
+      title: 'calculate offsetTop'
+    },
+    component: () => import('../views/OffsetTop.vue')
   }
 ]
 

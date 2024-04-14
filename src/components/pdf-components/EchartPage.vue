@@ -1,7 +1,7 @@
 <template>
   <div class="chart-wrap">
     <!-- <div class="title">{{ title }}</div> -->
-    <div id="wrap"></div>
+    <div :id="'wrap' + chartCode"></div>
     <el-button @click="changeData">点击</el-button>
   </div>
 </template>
@@ -9,6 +9,12 @@
   import echarts from '@/assets/echarts.js'
   import data from './data'
   export default {
+    props: {
+      chartCode: {
+        type: String,
+        default: ''
+      }
+    },
     data () {
       return {
         title: '',
@@ -44,7 +50,7 @@
         this.drawChart(dateList, barValueList, lineValueList)
       },
       drawChart (dateList, barValueList, lineValueList) {
-        const mychart = echarts.init(document.querySelector('#wrap'))
+        const mychart = echarts.init(document.querySelector('#wrap' + this.chartCode))
         mychart.clear()
         this.options = {
           title: {
@@ -173,7 +179,7 @@
     .title {
       text-align: center;
     }
-    #wrap {
+    #wrap, #wrapchartCode {
       height: 550px;
     }
 

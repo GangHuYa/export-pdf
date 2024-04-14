@@ -12,6 +12,7 @@ async function toCanvas(element, width) {
    // allowTaint: true, // 允许渲染跨域图片
     scale: window.devicePixelRatio * 2,  // 增加清晰度
     useCORS: true,// 允许跨域
+    background: '#eaeaea',
     onrendered: function (canvas) {
       document.body.appendChild(canvas);
     }
@@ -36,7 +37,7 @@ async function toCanvas(element, width) {
  * @param {HTMLElement} param.header - 页眉dom元素
  * @param {HTMLElement} param.footer - 页脚dom元素
  */
-export async function outputPDF({ element, contentWidth = 550, header, footer, filename = "测试A4分页.pdf" }) {
+export async function outputPDF({ element, contentWidth = 550, outerestClassName, header, footer, filename = "测试A4分页.pdf" }) {
   if (!(element instanceof HTMLElement)) {
     return;
   }
@@ -91,33 +92,33 @@ export async function outputPDF({ element, contentWidth = 550, header, footer, f
   const baseY = 15;
 
   // 出去页头、页眉、还有内容与两者之间的间距后 每页内容的实际高度
-  // const originalPageHeight = (A4_HEIGHT - tfooterHeight - theaderHeight - 2 * baseY);
-  const originalPageHeight = (A4_HEIGHT - tfooterHeight - theaderHeight - baseY);
+  const originalPageHeight = (A4_HEIGHT - tfooterHeight - theaderHeight - baseY *2);
+  // 暂时去掉页眉
+  // const originalPageHeight = (A4_HEIGHT - tfooterHeight - baseY);
 
   // 元素在网页页面的宽度
   const elementWidth = element.offsetWidth;
 
   // PDF内容宽度 和 在HTML中宽度 的比， 用于将 元素在网页的高度 转化为 PDF内容内的高度， 将 元素距离网页顶部的高度  转化为 距离Canvas顶部的高度
   const rate = contentWidth / elementWidth
+  console.log('rate', rate, elementWidth)
 
   // 每一页的分页坐标， PDF高度， 初始值为根元素距离顶部的距离
-  const pages = [rate * getElementTop(element)];
-  // console.log('pages', getElementTop(element), pages)
+  const pages = [0];
+
 
   // 获取元素距离网页顶部的距离
   // 通过遍历offsetParant获取距离顶端元素的高度值
   function getElementTop(element) {
     let actualTop = element.offsetTop;
     let current = element.offsetParent;
-
-    while (current && current !== null) {
+    // while (current && current !== null) {
+    while (current && !current.classList.contains(outerestClassName)) {
       actualTop += current.offsetTop;
       current = current.offsetParent;
     }
     return actualTop;
   }
-
-
 
   // 遍历正常的元素节点
   function traversingNodes(nodes) {
@@ -140,16 +141,16 @@ export async function outputPDF({ element, contentWidth = 550, header, footer, f
       // dom转换后距离顶部的高度
       // 转换成canvas高度
       const top = rate * (offsetTop)
-      if (i === 0) {
-        console.log('top', top)
-      }
+      // if (i === 0) {
+      //   console.log('top', top)
+      // }
 
       // 对于需要进行分页且内部存在需要分页（即不属于深度终点）的元素进行处理
       if (isDivideInside) {
         // 执行位置更新操作
-        updatePos(rate * offsetHeight, top, one);
+        // updatePos(rate * offsetHeight, top, one);
         // 执行深度遍历操作
-        // traversingNodes(one.childNodes);
+        traversingNodes(one.childNodes);
       }
       // 对于深度终点元素进行处理
       else if (isTableCol || isIMG) {
@@ -166,7 +167,7 @@ export async function outputPDF({ element, contentWidth = 550, header, footer, f
       // 对于普通元素，则判断是否高度超过分页值，并且深入
       else {
         // 执行位置更新操作
-        updateNomalElPos(top)
+        updateNomalElPos(rate * offsetHeight, top, one)
         // 遍历子节点
         // traversingNodes(one.childNodes);
       }
@@ -188,10 +189,11 @@ export async function outputPDF({ element, contentWidth = 550, header, footer, f
 
   // 普通元素更新位置的方法
   // 普通元素只需要考虑到是否到达了分页点，即当前距离顶部高度 - 上一个分页点的高度 大于 正常一页的高度，则需要载入分页点 
-  function updateNomalElPos(top) {
-    // console.log('updateNomalElPos-top', top, pages, originalPageHeight)
-    if (top - (pages.length > 0 ? pages[pages.length - 1] : 0) > originalPageHeight) {
-      pages.push((pages.length > 0 ? pages[pages.length - 1] : 0) + originalPageHeight);
+  function updateNomalElPos(eheight, top, element) {
+    // 若 距离当前页顶部的高度 加上元素自身的高度 大于 一页内容的高度, 则证明元素跨页，将当前高度作为分页位置
+    if ((top + eheight - (pages.length > 0 ? pages[pages.length - 1] : 0) > originalPageHeight) && (top != (pages.length > 0 ? pages[pages.length - 1] : 0))) {
+      console.log('updateNomalElPos', element.className, top, eheight, originalPageHeight)
+      pages.push(top);
     }
   }
 
@@ -199,49 +201,50 @@ export async function outputPDF({ element, contentWidth = 550, header, footer, f
   // 需要考虑分页元素，则需要考虑两种情况
   // 1. 普通达顶情况，如上
   // 2. 当前距离顶部高度加上元素自身高度 大于 整页高度，则需要载入一个分页点
-  function updatePos(eheight, top) {
-    // 如果高度已经超过当前页，则证明可以分页了
-    if (top - (pages.length > 0 ? pages[pages.length - 1] : 0) >= originalPageHeight) {
-      pages.push((pages.length > 0 ? pages[pages.length - 1] : 0) + originalPageHeight);
-    }
+  function updatePos(eheight, top, element) {
     // 若 距离当前页顶部的高度 加上元素自身的高度 大于 一页内容的高度, 则证明元素跨页，将当前高度作为分页位置
-    else if ((top + eheight - (pages.length > 0 ? pages[pages.length - 1] : 0) > originalPageHeight) && (top != (pages.length > 0 ? pages[pages.length - 1] : 0))) {
+    if ((top + eheight - (pages.length > 0 ? pages[pages.length - 1] : 0) > originalPageHeight) && (top != (pages.length > 0 ? pages[pages.length - 1] : 0))) {
+      // pages.push({ className: element.className, top: top});
+      console.log('updatePos', element.className, top, eheight, originalPageHeight)
       pages.push(top);
     }
   }
-
   // 深度遍历节点的方法
   traversingNodes(element.childNodes);
-  // console.log('pages', pages)
+
+
   // 可能会存在遍历到底部元素为深度节点，可能存在最后一页位置未截取到的情况
   if (pages[pages.length - 1] + originalPageHeight < height) {
     pages.push(pages[pages.length - 1] + originalPageHeight);
   }
-  //console.log({ pages, contentWidth, width,height })
 
-
-  const newPages = pages.map(item => item - pages[0])
+  // 如果
+  const newPages = pages.filter(item => item <= height)
+  // const newPages = pages
+  console.log('newPages', newPages)
+  
   // 根据分页位置 开始分页
   for (let i = 0; i < newPages.length; ++i) {
     Message.success(`共${newPages.length}页， 生成第${i + 1}页`)
     // 根据分页位置新增图片
-    // addImage(baseX, baseY + theaderHeight - newPages[i], pdf, data, width, height);
     addImage(baseX, baseY + theaderHeight - newPages[i], pdf, data, width, height);
+    // addImage(baseX, -newPages[i], pdf, data, width, height);
+
     // 将 内容 与 页眉之间留空留白的部分进行遮白处理
-    // addBlank(0, theaderHeight, A4_WIDTH, baseY, pdf);
+    addBlank(0, theaderHeight, A4_WIDTH, baseY, pdf);
+
     // 将 内容 与 页脚之间留空留白的部分进行遮白处理
     addBlank(0, A4_HEIGHT - baseY - tfooterHeight, A4_WIDTH, baseY, pdf);
-    // addBlank(0, A4_HEIGHT - baseY, A4_WIDTH, baseY, pdf);
     // 对于除最后一页外，对 内容 的多余部分进行遮白处理
     if (i < newPages.length - 1) {
       // 获取当前页面需要的内容部分高度
       const imageHeight = newPages[i + 1] - newPages[i];
       // 对多余的内容部分进行遮白
-      addBlank(0, baseY + imageHeight + theaderHeight, A4_WIDTH, A4_HEIGHT - (imageHeight), pdf);
-      // addBlank(0, imageHeight + theaderHeight, A4_WIDTH, A4_HEIGHT - (imageHeight), pdf);
+      addBlank(0, baseY - 2 + imageHeight + theaderHeight, A4_WIDTH, A4_HEIGHT - (imageHeight), pdf);
     }
     // 添加页眉
     await addHeader(header, pdf, A4_WIDTH)
+
     // 添加页脚
     await addFooter(newPages.length, i + 1, footer, pdf, A4_WIDTH);
     

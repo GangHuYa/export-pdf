@@ -1,10 +1,9 @@
 <!-- -->
 <template>
   <div class="circle-wrap">
-    <div class="circle-wrap-left" id="circle-left-chart">
-      
+    <div class="circle-wrap-left" :id="'circle-left-chart' + chartCode">
     </div>
-    <div class="circle-wrap-right" id="circle-right-chart">
+    <div class="circle-wrap-right" :id="'circle-right-chart' + chartCode">
     </div>
   </div>
 </template>
@@ -12,12 +11,18 @@
 <script>
   import echarts from '@/assets/echarts.js'
   export default {
+    props: {
+      chartCode: {
+        type: String,
+        default: ''
+      }
+    },
     data () {
       return {}
     },
     mounted () {
-      this.drawChart('#circle-left-chart')
-      this.drawChart('#circle-right-chart')
+      this.drawChart('#circle-left-chart' + this.chartCode)
+      this.drawChart('#circle-right-chart' + this.chartCode)
     },
     methods: {
       drawChart(idName) {
@@ -86,9 +91,10 @@
 </script>
 <style lang='less' scoped>
   .circle-wrap {
-    width: 1302px;
+    // width: 1302px;
     display: flex;
     justify-content: space-between;
+    background: #fff;
     .circle-wrap-left {
       width: 651px;
       height: 535px;

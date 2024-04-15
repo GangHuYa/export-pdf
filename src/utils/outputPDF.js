@@ -1,18 +1,19 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Message  } from 'element-ui';
-const A4_WIDTH = 592.28;
+const A4_WIDTH = 595.28;
 const A4_HEIGHT = 841.89;
 // 将元素转化为canvas元素
 // 通过 放大 提高清晰度
 // width为内容宽度
 async function toCanvas(element, width) {
+  // console.log('window.devicePixelRatio', window.devicePixelRatio)
   // canvas元素
   const canvas = await html2canvas(element, {
    // allowTaint: true, // 允许渲染跨域图片
-    scale: window.devicePixelRatio * 2,  // 增加清晰度
+    scale: 3, // window.devicePixelRatio * 2,  // 增加清晰度
     useCORS: true,// 允许跨域
-    background: '#eaeaea',
+    backgroundColor: '#fff',
     onrendered: function (canvas) {
       document.body.appendChild(canvas);
     }
@@ -25,6 +26,12 @@ async function toCanvas(element, width) {
   const height = (width / canvasWidth) * canvasHeight;
   // 转化成图片Data
   const canvasData = canvas.toDataURL('image/jpeg', 1.0);
+
+  // console.log('canvasData', canvasData)
+  // const image = document.createElement('img')
+  // image.src = canvasData
+  // image.height = 300
+  // document.body.appendChild(image)
   //console.log(canvasData)
   return { width, height, data: canvasData };
 }
@@ -37,16 +44,28 @@ async function toCanvas(element, width) {
  * @param {HTMLElement} param.header - 页眉dom元素
  * @param {HTMLElement} param.footer - 页脚dom元素
  */
-export async function outputPDF({ element, contentWidth = 550, outerestClassName, header, footer, filename = "测试A4分页.pdf" }) {
+
+// 添加第一页
+export async function addFirstPage(firstPage, pdf) {
+  const { height: firstPageHeight, data: firstPageData } = await toCanvas(firstPage, A4_WIDTH);
+  pdf.addImage(firstPageData, 'JPEG', 0, 0, A4_WIDTH, firstPageHeight);
+  pdf.addPage()
+}
+
+
+export async function outputPDF({ element, firstpage, contentWidth = 550, outerestClassName, header, footer, filename = "测试A4分页.pdf" }) {
   if (!(element instanceof HTMLElement)) {
     return;
   }
+
   // jsPDFs实例
   const pdf = new jsPDF({
     unit: 'pt',
     format: 'a4',
     orientation: 'p',
   });
+
+  addFirstPage(firstpage, pdf)
 
   // 一页的高度， 转换宽度为一页元素的宽度
   const { width, height, data } = await toCanvas(element, contentWidth);
@@ -101,7 +120,7 @@ export async function outputPDF({ element, contentWidth = 550, outerestClassName
 
   // PDF内容宽度 和 在HTML中宽度 的比， 用于将 元素在网页的高度 转化为 PDF内容内的高度， 将 元素距离网页顶部的高度  转化为 距离Canvas顶部的高度
   const rate = contentWidth / elementWidth
-  console.log('rate', rate, elementWidth)
+  // console.log('rate', rate, elementWidth)
 
   // 每一页的分页坐标， PDF高度， 初始值为根元素距离顶部的距离
   const pages = [0];
@@ -192,7 +211,7 @@ export async function outputPDF({ element, contentWidth = 550, outerestClassName
   function updateNomalElPos(eheight, top, element) {
     // 若 距离当前页顶部的高度 加上元素自身的高度 大于 一页内容的高度, 则证明元素跨页，将当前高度作为分页位置
     if ((top + eheight - (pages.length > 0 ? pages[pages.length - 1] : 0) > originalPageHeight) && (top != (pages.length > 0 ? pages[pages.length - 1] : 0))) {
-      console.log('updateNomalElPos', element.className, top, eheight, originalPageHeight)
+      // console.log('updateNomalElPos', element.className, top, eheight, originalPageHeight)
       pages.push(top);
     }
   }
@@ -205,7 +224,7 @@ export async function outputPDF({ element, contentWidth = 550, outerestClassName
     // 若 距离当前页顶部的高度 加上元素自身的高度 大于 一页内容的高度, 则证明元素跨页，将当前高度作为分页位置
     if ((top + eheight - (pages.length > 0 ? pages[pages.length - 1] : 0) > originalPageHeight) && (top != (pages.length > 0 ? pages[pages.length - 1] : 0))) {
       // pages.push({ className: element.className, top: top});
-      console.log('updatePos', element.className, top, eheight, originalPageHeight)
+      // console.log('updatePos', element.className, top, eheight, originalPageHeight)
       pages.push(top);
     }
   }
@@ -221,8 +240,8 @@ export async function outputPDF({ element, contentWidth = 550, outerestClassName
   // 如果
   const newPages = pages.filter(item => item <= height)
   // const newPages = pages
-  console.log('newPages', newPages)
-  
+  // console.log('newPages', newPages)
+
   // 根据分页位置 开始分页
   for (let i = 0; i < newPages.length; ++i) {
     Message.success(`共${newPages.length}页， 生成第${i + 1}页`)

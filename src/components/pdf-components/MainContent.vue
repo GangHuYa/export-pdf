@@ -2,6 +2,7 @@
 <template>
   <div class="second-page-wrap" id="secondPage">
     <TotalIndex :chartCode="chartCode" class="divide-inside"></TotalIndex>
+    <!--
     <div class="area-first area-common 1">
       1
       <el-table
@@ -46,7 +47,6 @@
         </el-table-column>
       </el-table>
     </div>
-
     <div class="area-common 3">
       3
       <el-table
@@ -164,6 +164,7 @@
     </div>
 
     <AreaStyle class="area-common 15" :chartCode="chartCode"></AreaStyle>
+    -->
   </div>
 </template>
 

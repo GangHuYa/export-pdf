@@ -24,13 +24,15 @@
     </div>
     <div class="footer">
     </div>
-    <MainContent class="second-page-pdf" chartCode="chartCode"></MainContent>
+    <FirstPage class="fristpage"></FirstPage>
+    <!-- <MainContent class="second-page-pdf" chartCode="chartCode"></MainContent> -->
     <!-- <el-button @click="exportPDF('secondPage')">export pdf</el-button> -->
   </div>
 </template>
 <script>
   import MainContent from '@/components/pdf-components/MainContent'
-  import { outputPDF } from '../utils/outputPDF'
+  import FirstPage from '@/components/FirstPage'
+  import { addFirstPage, outputPDF } from '../utils/outputPDF'
   // import { Message  } from 'element-ui';
   // import pageHeader from '../assets/page-header.png'
 
@@ -182,7 +184,8 @@
       }
     },
     components: {
-      MainContent
+      MainContent,
+      FirstPage
     },
     mounted() {
     },
@@ -193,17 +196,20 @@
         })
       },
       async generatePdf() {
-        const element = document.querySelector('.second-page-pdf');
-        // const element = document.querySelector('.second-page');
-        // element.style.width = 1300 + 'px'
+        // const element = document.querySelector('.second-page-pdf');
+        const element = document.querySelector('.second-page');
+        const firstpage = document.querySelector('.fristpage');
         const header = document.querySelector('.image-wrap');
         const footer = document.querySelector('.footer');
         try {
+          // await addFirstPage(firstpage)
+
           await outputPDF({
             element: element,
+            firstpage,
             header: header,
             footer,
-            outerestClassName: 'second-page-pdf',
+            outerestClassName: 'second-page', // 'second-page-pdf',
             contentWidth: 560
           })
         } catch (error) {
@@ -216,8 +222,8 @@
 </script>
 <style lang="less" scoped>
   .page-container {
-    height: 100vh;
-    overflow: hidden;
+    // height: 100vh;
+    // overflow: hidden;
     display: flex;
     margin: 0 auto;
     .page-left {
@@ -226,8 +232,8 @@
       padding: 60px 20px 0 20px;
     }
     .page-right {
-      height: 100%;
-      overflow: hidden;
+      // height: 100%;
+      // overflow: hidden;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -254,10 +260,8 @@
     position: fixed;
     top: -1000px;
     left: 0;
-    width: 1320px;
-    height: 60px;
-    background: blue;
-    // opacity: 0.1;
+    width: 1210px;
+    height: 80px;
     .image {
       width: 100%;
       height: 100%;
@@ -270,13 +274,13 @@
     left: 0;
     height: 20px;
     width: 100%;
-    background: yellow;
+    background: #fff;
   }
   .second-page-pdf {
     position: fixed;
     background: #fff;
     left: -2000px;
     top: 0px;
-    width: 1320px;
+    width: 1210px;
   }
 </style>

@@ -88,7 +88,7 @@
     methods: {
       initData() {
         let list = []
-        for (let i = 0; i < 40; i++) {
+        for (let i = 0; i < 10; i++) {
           const obj = {
             zqcode: '300043' + i,
             zqname: '星辉娱乐' + i,

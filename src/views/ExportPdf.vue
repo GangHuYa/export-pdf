@@ -196,14 +196,13 @@
         })
       },
       async generatePdf() {
-        // const element = document.querySelector('.second-page-pdf');
         const element = document.querySelector('.second-page');
+        // element.style.offsetWidth = '1320px'
+        // console.log('width', element.offsetWidth)
         const firstpage = document.querySelector('.fristpage');
         const header = document.querySelector('.image-wrap');
         const footer = document.querySelector('.footer');
         try {
-          // await addFirstPage(firstpage)
-
           await outputPDF({
             element: element,
             firstpage,
@@ -214,7 +213,6 @@
           })
         } catch (error) {
           console.log('error', error)
-          // Message.error(typeof error === 'string' ? error : JSON.stringify(error))
         }
       },
     }
@@ -258,7 +256,7 @@
   }
   .image-wrap {
     position: fixed;
-    top: -1000px;
+    top: -2000px;
     left: 0;
     width: 1210px;
     height: 80px;

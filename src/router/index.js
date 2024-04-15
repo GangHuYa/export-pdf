@@ -57,6 +57,14 @@ const routes = [
       title: 'calculate offsetTop'
     },
     component: () => import('../views/OffsetTop.vue')
+  },
+  {
+    path: '/sticky',
+    name: 'sticky',
+    meta: {
+      title: 'calculate offsetTop'
+    },
+    component: () => import('../views/PageSticky.vue')
   }
 ]
 

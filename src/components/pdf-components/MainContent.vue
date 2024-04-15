@@ -2,7 +2,6 @@
 <template>
   <div class="second-page-wrap" id="secondPage">
     <TotalIndex :chartCode="chartCode" class="divide-inside"></TotalIndex>
-    <!--
     <div class="area-first area-common 1">
       1
       <el-table
@@ -164,7 +163,6 @@
     </div>
 
     <AreaStyle class="area-common 15" :chartCode="chartCode"></AreaStyle>
-    -->
   </div>
 </template>
 
@@ -364,6 +362,7 @@
 </script>
 <style lang='less' scoped>
   .second-page-wrap {
+    padding-top: 20px;
     .area-first {
       background: red;
     }
@@ -382,7 +381,7 @@
     }
     .area-common {
       // margin: 30px auto;
-      width: 80%;
+      width: 98%;
       margin: 0 auto 20px auto;
       // padding: 30px 0;
     }

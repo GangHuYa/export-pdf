@@ -33,7 +33,7 @@ export default {
   .first-page {
     position: fixed;
     top: 0;
-    left: -1000px;
+    left: -2000px;
     width: 1210px;
     display: flex;
     justify-content: center;

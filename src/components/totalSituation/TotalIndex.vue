@@ -1,6 +1,6 @@
 <template>
   <div class="total-wrap">
-    <BaseInfo class="area-common"></BaseInfo>
+    <BaseInfo class="area-common first"></BaseInfo>
     <NewValueTrend class="area-common" :chartCode="chartCode"></NewValueTrend>
     <PlayCall class="area-common" :chartCode="chartCode"></PlayCall>
     <TableGrade class="area-common" title="业绩指标"></TableGrade>
@@ -37,7 +37,7 @@
 </script>
 <style lang="less" scoped>
   .area-common {
-    width: 80%;
+    width: 98%;
     margin: 0 auto 20px auto;
   }
 </style>

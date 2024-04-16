@@ -24,6 +24,7 @@
         </el-table-column>
       </el-table>
     </div>
+    <!--
     <div class="area-common 2">
       2
       <el-table
@@ -163,6 +164,7 @@
     </div>
 
     <AreaStyle class="area-common 15" :chartCode="chartCode"></AreaStyle>
+    -->
   </div>
 </template>
 
@@ -188,6 +190,7 @@
     },
     data () {
       return {
+        value: '',
         tableData: [{
           date: '2016-05-02',
           name: '王小虎',

@@ -189,6 +189,7 @@
 
     // 一页的高度， 转换宽度为一页元素的宽度
     const { width, height, data } = await toCanvas(element, contentWidth, 1320);
+  
     // 页脚元素 经过转换后在PDF页面的高度
     const { height: tfooterHeight } = await toCanvas(footer, contentWidth)
 

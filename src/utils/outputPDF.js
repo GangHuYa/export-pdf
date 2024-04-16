@@ -27,6 +27,8 @@
     const canvasWidth = canvas.width;
     // 获取canvas转化后的高度
     const canvasHeight = canvas.height;
+    const { offsetWidth, offsetHeight } = element
+    console.log('originalData', offsetWidth, offsetHeight, canvasWidth, canvasHeight)
     // 高度转化为PDF的高度
     const height = (width / canvasWidth) * canvasHeight;
     // 转化成图片Data

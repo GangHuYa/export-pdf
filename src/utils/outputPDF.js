@@ -12,18 +12,16 @@
   // width为内容宽度
   async function toCanvas(element, width) {
     const options = {
-      // allowTaint: true, // 允许渲染跨域图片
-      scale: 3, // window.devicePixelRatio * 2,  // 增加清晰度
+      allowTaint: true, // 允许渲染跨域图片
+      scale: 2, // window.devicePixelRatio * 2,  // 增加清晰度
       useCORS: true,// 允许跨域
       backgroundColor: '#fff',
+      width: element.offsetWidth, // 加入width和高可以让比列一致
+      height: element.offsetHeight,
       onrendered: function (canvas) {
         document.body.appendChild(canvas);
       }
     }
-    // if (elementWidth) {
-    //   options.width = elementWidth
-    //   options.height = element.offsetHeight
-    // }
     const canvas = await html2canvas(element, options);
     // 获取canavs转化后的宽度
     const canvasWidth = canvas.width;

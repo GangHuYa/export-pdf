@@ -248,7 +248,7 @@
       .second-page {
         flex: 1;
         overflow: auto;
-        width: 1320px;
+        // width: 1320px;
         // background: purple;
         position: relative;
       }

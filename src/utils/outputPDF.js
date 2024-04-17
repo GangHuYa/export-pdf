@@ -6,6 +6,7 @@
 
   // 每一页的分页坐标， PDF高度， 初始值为根元素距离顶部的距离
   const pages = [0];
+  const elementHeight = [] // record last element's height
 
   // 将元素转化为canvas元素
   // 通过 放大 提高清晰度
@@ -106,7 +107,12 @@
       // 对于需要进行分页且内部存在需要分页（即不属于深度终点）的元素进行处理
       if (isDivideInside) {
         // 执行深度遍历操作
-        traversingNodes({ nodes: one.childNodes, rate, outerestClassName, originalPageHeight });
+        traversingNodes({ 
+          nodes: one.childNodes, 
+          rate, 
+          outerestClassName, 
+          originalPageHeight
+        });
       }
       // 对于深度终点元素进行处理
       else if (isTableCol || isIMG) {
@@ -123,7 +129,8 @@
       // 对于普通元素，则判断是否高度超过分页值，并且深入
       else {
         // 执行位置更新操作
-        updateNomalElPos(rate * offsetHeight, top, originalPageHeight)
+        const currentIndex = i === nodes.length - 1 ?  nodes.length - 1 : 0
+        updateNomalElPos(rate * offsetHeight, top, originalPageHeight, currentIndex)
         // 遍历子节点
         // traversingNodes({ nodes: one.childNodes, rate, outerestClassName });
       }
@@ -156,10 +163,13 @@
 
   // 普通元素更新位置的方法
   // 普通元素只需要考虑到是否到达了分页点，即当前距离顶部高度 - 上一个分页点的高度 大于 正常一页的高度，则需要载入分页点 
-  function updateNomalElPos(eheight, top, originalPageHeight) {
+  function updateNomalElPos(eheight, top, originalPageHeight, currentIndex) {
     // 若 距离当前页顶部的高度 加上元素自身的高度 大于 一页内容的高度, 则证明元素跨页，将当前高度作为分页位置
     if ((top + eheight - (pages.length > 0 ? pages[pages.length - 1] : 0) > originalPageHeight) && (top != (pages.length > 0 ? pages[pages.length - 1] : 0))) {
       pages.push(top);
+      if (currentIndex > 0) {
+        elementHeight.push(eheight)
+      }
     }
   }
 
@@ -172,7 +182,7 @@
    * @param {HTMLElement} param.header - 页眉dom元素
    * @param {HTMLElement} param.footer - 页脚dom元素
    */
-  export async function outputPDF({ element, firstpage, contentWidth = 550, outerestClassName, header, footer, filename = "测试A4分页.pdf" }) {
+  export async function outputPDF({ element, firstpage, contentWidth = 550, outerestClassName, header, footer, endImage, filename = "测试A4分页.pdf" }) {
     if (!(element instanceof HTMLElement)) {
       return;
     }
@@ -202,7 +212,7 @@
     const baseY = 15;
 
     // 出去页头、页眉、还有内容与两者之间的间距后 每页内容的实际高度
-    const originalPageHeight = (A4_HEIGHT - tfooterHeight - theaderHeight - baseY *2);
+    const originalPageHeight = (A4_HEIGHT - tfooterHeight - theaderHeight - baseY * 2);
 
     // 元素在网页页面的宽度
     const elementWidth = element.offsetWidth;
@@ -252,5 +262,42 @@
         pdf.addPage();
       }
     }
+    // add a image to the last page of pdf file
+    addLastImage({
+      endImage, 
+      contentWidth, 
+      originalPageHeight, 
+      rate, 
+      theaderHeight,
+      baseY,
+      pdf,
+      header
+    })
     return pdf.save(filename)
+  }
+
+  async function addLastImage({
+    endImage, 
+    contentWidth, 
+    originalPageHeight, 
+    rate, 
+    theaderHeight,
+    baseY,
+    pdf,
+    header
+  }) {
+    const { height: endImageHeight, data: endImageData } = await toCanvas(endImage, contentWidth)
+    // add last image
+    const lastHeight = elementHeight[elementHeight.length - 1]
+    // if blank space is enough, add last image
+    if (originalPageHeight - lastHeight >= endImageHeight * rate) {
+      const top = lastHeight + theaderHeight + 2 * baseY
+      pdf.addImage(endImageData, 'PNG', (contentWidth - contentWidth * rate) / 2, top, contentWidth * rate, endImageHeight * rate)
+    } else {
+      pdf.addPage()
+      // 添加页眉
+      await addHeader(header, pdf, A4_WIDTH)
+      const top = theaderHeight + 2 * baseY
+      pdf.addImage(endImageData, 'PNG', (contentWidth - contentWidth * rate) / 2, top, contentWidth * rate, endImageHeight * rate)
+    }
   }

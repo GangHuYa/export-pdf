@@ -24,6 +24,9 @@
     </div>
     <div class="footer">
     </div>
+    <div class="endImage">
+      <img src="../assets/logo.png" alt="">
+    </div>
     <FirstPage class="fristpage"></FirstPage>
     <!-- <MainContent class="second-page-pdf" chartCode="chartCode"></MainContent> -->
     <!-- <el-button @click="exportPDF('secondPage')">export pdf</el-button> -->
@@ -202,12 +205,14 @@
         const firstpage = document.querySelector('.fristpage');
         const header = document.querySelector('.image-wrap');
         const footer = document.querySelector('.footer');
+        const endImage = document.querySelector('.endImage');
         try {
           await outputPDF({
             element: element,
             firstpage,
             header: header,
             footer,
+            endImage,
             outerestClassName: 'second-page', // 'second-page-pdf',
             contentWidth: 560
           })
@@ -240,6 +245,10 @@
         .export-button-contain {
           text-align: right;
           padding-right: 150px;
+          position: fixed;
+          top: 50px;
+          right: 20px;
+          z-index: 100;
         }
       }
       .second-page::-webkit-scrollbar {
@@ -273,6 +282,17 @@
     height: 20px;
     width: 100%;
     background: #fff;
+  }
+  .endImage {
+    position: fixed;
+    top: -300px;
+    left: 0;
+    width: 200px;
+    height: 200px;
+    img {
+      width: 100%;
+      height: 100%;
+    }
   }
   .second-page-pdf {
     position: fixed;

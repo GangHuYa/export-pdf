@@ -6,7 +6,6 @@
 
   // 每一页的分页坐标， PDF高度， 初始值为根元素距离顶部的距离
   const pages = [0];
-  const elementHeight = [] // record last element's height
 
   // 将元素转化为canvas元素
   // 通过 放大 提高清晰度
@@ -28,8 +27,8 @@
     const canvasWidth = canvas.width;
     // 获取canvas转化后的高度
     const canvasHeight = canvas.height;
-    const { offsetWidth, offsetHeight } = element
-    console.log('originalData', offsetWidth, offsetHeight, canvasWidth, canvasHeight)
+    // const { offsetWidth, offsetHeight } = element
+    // console.log('originalData', offsetWidth, offsetHeight, canvasWidth, canvasHeight)
     // 高度转化为PDF的高度
     const height = (width / canvasWidth) * canvasHeight;
     // 转化成图片Data
@@ -129,8 +128,7 @@
       // 对于普通元素，则判断是否高度超过分页值，并且深入
       else {
         // 执行位置更新操作
-        const currentIndex = i === nodes.length - 1 ?  nodes.length - 1 : 0
-        updateNomalElPos(rate * offsetHeight, top, originalPageHeight, currentIndex)
+        updateNomalElPos(rate * offsetHeight, top, originalPageHeight)
         // 遍历子节点
         // traversingNodes({ nodes: one.childNodes, rate, outerestClassName });
       }
@@ -167,9 +165,6 @@
     // 若 距离当前页顶部的高度 加上元素自身的高度 大于 一页内容的高度, 则证明元素跨页，将当前高度作为分页位置
     if ((top + eheight - (pages.length > 0 ? pages[pages.length - 1] : 0) > originalPageHeight) && (top != (pages.length > 0 ? pages[pages.length - 1] : 0))) {
       pages.push(top);
-      if (currentIndex > 0) {
-        elementHeight.push(eheight)
-      }
     }
   }
 
@@ -198,7 +193,7 @@
 
 
     // 一页的高度， 转换宽度为一页元素的宽度
-    const { width, height, data } = await toCanvas(element, contentWidth, 1320);
+    const { width, height, data } = await toCanvas(element, contentWidth);
   
     // 页脚元素 经过转换后在PDF页面的高度
     const { height: tfooterHeight } = await toCanvas(footer, contentWidth)
@@ -248,7 +243,7 @@
         // 获取当前页面需要的内容部分高度
         const imageHeight = newPages[i + 1] - newPages[i];
         // 对多余的内容部分进行遮白
-        addBlank(0, baseY - 2 + imageHeight + theaderHeight, A4_WIDTH, A4_HEIGHT - (imageHeight), pdf);
+        addBlank(0, baseY + imageHeight + theaderHeight - 3, A4_WIDTH, A4_HEIGHT - (imageHeight), pdf);
       }
       // 添加页眉
       await addHeader(header, pdf, A4_WIDTH)
@@ -263,7 +258,7 @@
       }
     }
     // add a image to the last page of pdf file
-    addLastImage({
+    await addLastImage({
       endImage, 
       contentWidth, 
       originalPageHeight, 
@@ -271,7 +266,10 @@
       theaderHeight,
       baseY,
       pdf,
-      header
+      header,
+      height,
+      tfooterHeight,
+      newPages
     })
     return pdf.save(filename)
   }
@@ -284,20 +282,24 @@
     theaderHeight,
     baseY,
     pdf,
-    header
+    header,
+    height,
+    tfooterHeight,
+    newPages
   }) {
     const { height: endImageHeight, data: endImageData } = await toCanvas(endImage, contentWidth)
-    // add last image
-    const lastHeight = elementHeight[elementHeight.length - 1]
-    // if blank space is enough, add last image
-    if (originalPageHeight - lastHeight >= endImageHeight * rate) {
-      const top = lastHeight + theaderHeight + 2 * baseY
+    // console.log('endImageData', endImageData)
+    // console.log('height', height - newPages[newPages.length - 1] + theaderHeight + tfooterHeight + 2 * baseY, originalPageHeight)
+    if (originalPageHeight - (height - newPages[newPages.length - 1] + theaderHeight + tfooterHeight + 2 * baseY) >= endImageHeight * rate) {
+      const top = theaderHeight + baseY + (height - newPages[newPages.length - 1])
+      // console.log('top', top)
       pdf.addImage(endImageData, 'PNG', (contentWidth - contentWidth * rate) / 2, top, contentWidth * rate, endImageHeight * rate)
     } else {
       pdf.addPage()
       // 添加页眉
       await addHeader(header, pdf, A4_WIDTH)
-      const top = theaderHeight + 2 * baseY
+      const top = theaderHeight + baseY
+      // console.log('topp', top)
       pdf.addImage(endImageData, 'PNG', (contentWidth - contentWidth * rate) / 2, top, contentWidth * rate, endImageHeight * rate)
     }
   }

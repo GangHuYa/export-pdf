@@ -31,6 +31,14 @@
     // console.log('originalData', offsetWidth, offsetHeight, canvasWidth, canvasHeight)
     // 高度转化为PDF的高度
     const height = (width / canvasWidth) * canvasHeight;
+
+    if (element.classList.contains('second-page')) {
+      const { offsetHeight, offsetWidth } = element
+      console.log('canvas', offsetHeight, offsetWidth, canvasWidth, canvasHeight)
+      console.log('pdf-rate', width / canvasWidth)
+      console.log('pdf', width, height)
+    }
+
     // 转化成图片Data
     const canvasData = canvas.toDataURL('image/jpeg', 1.0);
 
@@ -47,14 +55,16 @@
   // 添加页脚
   async function addHeader(header, pdf, contentWidth) {
     const { height: headerHeight, data: headerData } = await toCanvas(header, contentWidth);
+    console.log('header', headerHeight)
     pdf.addImage(headerData, 'JPEG', 0, 0, contentWidth, headerHeight);
   }
 
   // 添加页眉
   async function addFooter(footer, pdf, contentWidth) {
-    const newFooter = footer.cloneNode(true);
-    document.documentElement.append(newFooter);
-    const { height: footerHeight, data: footerData } = await toCanvas(newFooter, contentWidth);
+    // const newFooter = footer.cloneNode(true);
+    // document.documentElement.append(newFooter);
+    const { height: footerHeight, data: footerData } = await toCanvas(footer, contentWidth);
+    console.log('footer', footerHeight)
     pdf.addImage(footerData, 'JPEG', 0, A4_HEIGHT - footerHeight, contentWidth, footerHeight)
   }
 
@@ -177,7 +187,7 @@
    * @param {HTMLElement} param.header - 页眉dom元素
    * @param {HTMLElement} param.footer - 页脚dom元素
    */
-  export async function outputPDF({ element, firstpage, contentWidth = 550, outerestClassName, header, footer, endImage, filename = "测试A4分页.pdf" }) {
+  export async function outputPDF({ element, firstpage, contentWidth = 550, outerestClassName, header, footer, endImage, filename = "测试A4分页.pdf", onProgress }) {
     if (!(element instanceof HTMLElement)) {
       return;
     }
@@ -189,17 +199,19 @@
       orientation: 'p',
     });
 
-    addFirstPage(firstpage, pdf)
-
+    await addFirstPage(firstpage, pdf)
+    onProgress(10)
 
     // 一页的高度， 转换宽度为一页元素的宽度
     const { width, height, data } = await toCanvas(element, contentWidth);
+    onProgress(60)
   
     // 页脚元素 经过转换后在PDF页面的高度
     const { height: tfooterHeight } = await toCanvas(footer, contentWidth)
 
     // 页眉元素 经过转换后在PDF的高度
     const { height: theaderHeight } = await toCanvas(header, contentWidth);
+    onProgress(70)
 
     // 距离PDF左边的距离，/ 2 表示居中 
     const baseX = (A4_WIDTH - contentWidth) / 2;        // 预留空间给左边
@@ -226,10 +238,13 @@
 
     // 如果
     const newPages = pages.filter(item => item <= height)
-
+    let currentProgress = 70
     // 根据分页位置 开始分页
     for (let i = 0; i < newPages.length; ++i) {
-      Message.success(`共${newPages.length}页， 生成第${i + 1}页`)
+      currentProgress += Math.floor(20 / newPages.length)
+      console.log('currentProgress', currentProgress)
+      onProgress(currentProgress)
+      // Message.success(`共${newPages.length}页， 生成第${i + 1}页`)
       // 根据分页位置新增图片
       addImage(baseX, baseY + theaderHeight - newPages[i], pdf, data, width, height);
 
@@ -271,6 +286,7 @@
       tfooterHeight,
       newPages
     })
+    onProgress(100)
     return pdf.save(filename)
   }
 
@@ -288,18 +304,14 @@
     newPages
   }) {
     const { height: endImageHeight, data: endImageData } = await toCanvas(endImage, contentWidth)
-    // console.log('endImageData', endImageData)
-    // console.log('height', height - newPages[newPages.length - 1] + theaderHeight + tfooterHeight + 2 * baseY, originalPageHeight)
     if (originalPageHeight - (height - newPages[newPages.length - 1] + theaderHeight + tfooterHeight + 2 * baseY) >= endImageHeight * rate) {
       const top = theaderHeight + baseY + (height - newPages[newPages.length - 1])
-      // console.log('top', top)
       pdf.addImage(endImageData, 'PNG', (contentWidth - contentWidth * rate) / 2, top, contentWidth * rate, endImageHeight * rate)
     } else {
       pdf.addPage()
       // 添加页眉
       await addHeader(header, pdf, A4_WIDTH)
       const top = theaderHeight + baseY
-      // console.log('topp', top)
       pdf.addImage(endImageData, 'PNG', (contentWidth - contentWidth * rate) / 2, top, contentWidth * rate, endImageHeight * rate)
     }
   }

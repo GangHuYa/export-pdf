@@ -140,6 +140,7 @@
 
     <LineArea class="area-common 13" :chartCode="chartCode"></LineArea>
 
+    <!-- <div class="area-common 14" v-for="(item, index) in 65" :key="index"> -->
     <div class="area-common 14">
       6
       <el-table

@@ -12,8 +12,11 @@
     </div>
     <div class="page-right">
       <div class="first-page module">
-        <div class="title">This is a first page</div>
+        <div class="title">This is a first page{{ str }}</div>
         <div class="export-button-contain">
+          <div class="export-progress">
+            <el-progress type="circle" :percentage="percentage" :color="colors"></el-progress>
+          </div>
           <el-button @click="generatePdf" class="exportButton">exportPdf</el-button>
         </div>
       </div>
@@ -42,6 +45,15 @@
   export default {
     data () {
       return {
+        str: '',
+        percentage: 0,
+        colors: [
+          {color: '#f56c6c', percentage: 20},
+          {color: '#e6a23c', percentage: 40},
+          {color: '#5cb87a', percentage: 60},
+          {color: '#1989fa', percentage: 80},
+          {color: '#67c23a', percentage: 100}
+        ],
         treeData: [
           {
             id: 1,
@@ -191,6 +203,10 @@
       FirstPage
     },
     mounted() {
+      const str = `据产业在线监测显示，2024年2月家用空调生产1174.4万台，同比下降17.9%，销售1232.1万台，同比下降11.1%，其中内销出货606.9万台，同比下降13.4%，出口出货625.2万台，同比下降8.7%。库存1761.8万台，同比下降9.4%。\n 
+综合1-2月来看，生产同比增长16.9%，内销同比增长16.3%，出口同比增长18.9%。`
+      // console.log('11', '同比下降9.4%。\n '.replace(/\n/g, ''))
+      this.str = str.replace(/\n/g, '')
     },
     methods: {
       exportPdf() {
@@ -200,13 +216,12 @@
       },
       async generatePdf() {
         const element = document.querySelector('.second-page');
-        // element.style.offsetWidth = '1320px'
-        // console.log('width', element.offsetWidth)
         const firstpage = document.querySelector('.fristpage');
         const header = document.querySelector('.image-wrap');
         const footer = document.querySelector('.footer');
         const endImage = document.querySelector('.endImage');
         try {
+          const startTime = Date.now()
           await outputPDF({
             element: element,
             firstpage,
@@ -214,8 +229,12 @@
             footer,
             endImage,
             outerestClassName: 'second-page', // 'second-page-pdf',
-            contentWidth: 560
+            contentWidth: 560,
+            onProgress: (progress) => {
+              this.percentage = progress
+            }
           })
+          console.log('endTime', Math.floor((Date.now() - startTime) / 1000))
         } catch (error) {
           console.log('error', error)
         }
@@ -243,12 +262,31 @@
       .first-page {
         background: #fff;
         .export-button-contain {
+          display: flex;
+          align-items: center;
           text-align: right;
           padding-right: 150px;
           position: fixed;
           top: 50px;
           right: 20px;
           z-index: 100;
+          .export-progress {
+            // border: 1px solid red;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+            text-align: center;
+            line-height: 36px;
+            font-size: 12px;
+            /deep/.el-progress-circle {
+              width: 36px !important;
+              height: 36px !important;
+            }
+            /deep/.el-progress__text {
+              font-size: 12px !important;
+            }
+          }
         }
       }
       .second-page::-webkit-scrollbar {
